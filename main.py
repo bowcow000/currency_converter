@@ -1,17 +1,37 @@
-# Константы для курсов
-RUB_TO_USD_RATE = 0.0102
-USD_TO_RUB_RATE = 98
+import requests
 
+API_URL = "https://v6.exchangerate-api.com/v6/263fb40fe97546c380bc3537/latest/USD"
 
-def convert_rubles_to_dollars(rubles):
-    return rubles * RUB_TO_USD_RATE
+def get_current_exchange_rate():
+    try:
+        response = requests.get(API_URL)
+        data = response.json()
 
+        if response.status_code == 200:
+            rub_to_usd = data["conversion_rates"]["RUB"]
+            return rub_to_usd
+        else:
+            print("Ошибка при получении курса.")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Ошибка: {e}")
+        return None
 
-def convert_dollars_to_rubles(dollars):
-    return dollars * USD_TO_RUB_RATE
+def convert_rubles_to_dollars(rubles, rate):
+    return rubles / rate
 
+def convert_dollars_to_rubles(dollars, rate):
+    return dollars * rate
 
 def main():
+    exchange_rate = get_current_exchange_rate()
+
+    if exchange_rate is None:
+        print("Не удалось получить курс валют. Программа завершена.")
+        return
+
+    print(f"Текущий курс доллара к рублю: 1 USD = {exchange_rate} руб.\n")
+
     print("1. Конвертировать рубли в доллары")
     print("2. Конвертировать доллары в рубли")
 
@@ -21,9 +41,9 @@ def main():
         try:
             rubles = float(input("Введите сумму в рублях: "))
             if rubles < 0:
-                print("Сумма не может быть отрицательной!")
+                print("Сумма не может быть отрицательной")
             else:
-                dollars = convert_rubles_to_dollars(rubles)
+                dollars = convert_rubles_to_dollars(rubles, exchange_rate)
                 print(f"{rubles} рублей = {dollars:.2f} доллара(ов)")
         except ValueError:
             print("Введите корректное число!")
@@ -31,16 +51,14 @@ def main():
         try:
             dollars = float(input("Введите сумму в долларах: "))
             if dollars < 0:
-                print("Сумма не может быть отрицательной!")
+                print("Сумма не может быть отрицательной")
             else:
-                rubles = convert_dollars_to_rubles(dollars)
+                rubles = convert_dollars_to_rubles(dollars, exchange_rate)
                 print(f"{dollars} долларов = {rubles:.2f} рублей")
         except ValueError:
-            print("Ошибка: введите корректное число!")
-
+            print("Введите корректное число!")
     else:
-        print("Некорректный выбор! Попробуйте снова.")
-
+        print("Некорректный выбор.")
 
 if __name__ == "__main__":
     main()
